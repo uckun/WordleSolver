@@ -15,9 +15,13 @@ def check_word(w, res, lettersIn, lettersOut, lettersCorrect, lettersIncorrect):
                 if lettersIn.count(c) > 0:
                     lettersIn.remove(c)
         elif r == 2:
-            lettersIncorrect.update({c: i})
+            if c not in lettersIncorrect:
+                lettersIncorrect[c] = []
+            lettersIncorrect[c].append(i)
         else:  # correct location
-            lettersCorrect.update({c: i})
+            if c not in lettersCorrect:
+                lettersCorrect[c] = []
+            lettersCorrect[c].append(i)
 
 
 def eliminateCandidates(candidates, lettersOut, lettersCorrect, lettersIncorrect):
@@ -27,12 +31,25 @@ def eliminateCandidates(candidates, lettersOut, lettersCorrect, lettersIncorrect
         for reject in lettersOut:
             if cand.count(reject) > 0:
                 reject_count += 1
-        for key, value in lettersCorrect.items():
-            if (cand[value] != key) or (cand.count(key)) == 0:
+        # Support multiple positions per letter (duplicate letters in target)
+        for key, positions in lettersCorrect.items():
+            min_count = len(positions) + len(lettersIncorrect.get(key, []))
+            if cand.count(key) < min_count:
                 reject_count += 1
-        for key, value in lettersIncorrect.items():
-            if (cand.count(key) == 0) or (cand[value] == key):
+            else:
+                for pos in positions:
+                    if cand[pos] != key:
+                        reject_count += 1
+                        break
+        for key, positions in lettersIncorrect.items():
+            min_count = len(positions) + len(lettersCorrect.get(key, []))
+            if cand.count(key) < min_count:
                 reject_count += 1
+            else:
+                for pos in positions:
+                    if cand[pos] == key:
+                        reject_count += 1
+                        break
         if reject_count == 0:
             newCandidates.append(cand)
     return newCandidates
@@ -58,14 +75,14 @@ def valid_word(word):
 
 
 def addToCorrectAnswers(word):
-    correctFile = open("correctWords.txt", "a")
+    correctFile = open("/Users/serdar/Documents/Software Development/WordleSolver/correctWords.txt", "a")
     correctFile.write(word)
     correctFile.write('\n')
     correctFile.close()
 
 
 def notPreviouslyUsed(word):
-    correctFile = open("correctWords.txt", "r")
+    correctFile = open("/Users/serdar/Documents/Software Development/WordleSolver/correctWords.txt", "r")
     content = correctFile.read()
     contentList = content.split("\n")
     correctFile.close()

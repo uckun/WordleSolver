@@ -7,15 +7,15 @@ from  WordleSolverDefs import *
 
 letters_in = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') # al letters in at first
 letters_out = list() # empty list
-letters_correct = dict() # dictionary with letters as key and values as position starting from 1
-letters_incorrect = dict() # dictionary with letters as key and values as position starting from 1
+letters_correct = dict()  # letter -> list of correct positions (0-indexed)
+letters_incorrect = dict()  # letter -> list of wrong positions (0-indexed)
 count_letters = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 candidates = list()
 previousAnswers = list()
 letter_counts = dict()
 solved = False
 
-my_file = open("allwords.txt", "r")
+my_file = open("/Users/serdar/Documents/Software Development/WordleSolver/allwords.txt", "r")
 content = my_file.read()
 content_list = content.split("\n")
 my_file.close()

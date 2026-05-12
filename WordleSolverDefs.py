@@ -6,14 +6,13 @@ def check_word(w, res, lettersIn, lettersOut, lettersCorrect, lettersIncorrect):
             if w.count(c) > 1:  # repeated letter; treat it differently
                 counter = 0
                 for j, k in enumerate(w):
-                    if int(res[j]) > 1:
+                    if k == c and int(res[j]) > 1:  # only count same letter
                         counter = counter + 1
                 if counter > 0:
                     continue
-            else:
-                lettersOut.append(c)
-                if lettersIn.count(c) > 0:
-                    lettersIn.remove(c)
+            lettersOut.append(c)
+            if lettersIn.count(c) > 0:
+                lettersIn.remove(c)
         elif r == 2:
             if c not in lettersIncorrect:
                 lettersIncorrect[c] = []

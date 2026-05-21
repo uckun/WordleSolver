@@ -300,6 +300,38 @@ class TestEliminateCandidates(unittest.TestCase):
         for word in filtered:
             self.assertNotIn('X', word, f"{word} contains X which should be filtered out")
 
+    def test_integration_duplicate_green_position_does_not_inflate_min_count(self):
+        """
+        Regression test for the AWARE elimination bug.
+
+        Two separate guesses that both end in E (position 4, green) previously
+        caused lettersCorrect['E'] = [4, 4] (fixed by dedup), but also
+        lettersIncorrect['R'] = [1, 0] because R appeared yellow at position 1
+        in CRANE and yellow at position 0 in RAISE.  Those two yellows come from
+        *different* guesses and both refer to the same R in the answer; the
+        min-count for R is therefore 1, not 2.  Using the old accumulated-length
+        formula gives min_count=2 and incorrectly rejects AWARE (1 R).
+
+        Fix: letterMinCounts tracks the maximum non-gray count seen in any
+        single guess, which is the correct per-letter lower bound.
+
+        Sequence:
+          Guess 1: CRANE result 12313  → R yellow@1, A green@2, E green@4
+          Guess 2: RAISE result 22113  → R yellow@0, A yellow@1, E green@4
+        Target: AWARE (A@0, W@1, A@2, R@3, E@4).
+        """
+        li, lo, lc, li2 = fresh_state()
+        lmc = {}
+        check_word('CRANE', '12313', li, lo, lc, li2, lmc)
+        check_word('RAISE', '22113', li, lo, lc, li2, lmc)
+        # Dedup check: E must be recorded at position 4 exactly once
+        self.assertEqual(lc.get('E'), [4], "E should be recorded at position 4 exactly once")
+        # Min-count check: R had max 1 non-gray occurrence in any single guess
+        self.assertEqual(lmc.get('R'), 1, "letterMinCounts['R'] should be 1, not 2")
+        candidates = ['AWARE', 'AAARE', 'CRANE']
+        filtered = eliminateCandidates(candidates, lo, lc, li2, lmc)
+        self.assertIn('AWARE', filtered, "AWARE must not be eliminated by inflated R min_count")
+
 
 # ---------------------------------------------------------------------------
 # valid_result

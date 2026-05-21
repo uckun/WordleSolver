@@ -9,6 +9,7 @@ letters_in = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') # al letters in at first
 letters_out = list() # empty list
 letters_correct = dict()  # letter -> list of correct positions (0-indexed)
 letters_incorrect = dict()  # letter -> list of wrong positions (0-indexed)
+letter_min_counts = dict()  # letter -> max non-gray count seen in any single guess
 count_letters = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 candidates = list()
 previousAnswers = list()
@@ -53,15 +54,15 @@ while not solved:
         newWord = input("Select and enter new word: ").upper()
     while not(valid_result(result)):
         result = input("Enter result from Wordle: ")
-    check_word(newWord, result, letters_in, letters_out, letters_correct, letters_incorrect)
+    check_word(newWord, result, letters_in, letters_out, letters_correct, letters_incorrect, letter_min_counts)
     if result == '33333':
         print('Solved!')
         if notPreviouslyUsed(newWord):
             addToCorrectAnswers(newWord)
         solved = True
     else:
-        candidates = eliminateCandidates(candidates, letters_out, letters_correct, letters_incorrect)
-        previousAnswers = eliminateCandidates(previousAnswers, letters_out, letters_correct, letters_incorrect)
+        candidates = eliminateCandidates(candidates, letters_out, letters_correct, letters_incorrect, letter_min_counts)
+        previousAnswers = eliminateCandidates(previousAnswers, letters_out, letters_correct, letters_incorrect, letter_min_counts)
         print(str(len(candidates)) + ' five letter words remaining')
         print('Candidates:')
         print(candidates)
